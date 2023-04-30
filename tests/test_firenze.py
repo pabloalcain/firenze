@@ -29,6 +29,11 @@ class Notebook:
     def is_clean(self) -> bool:
         return all([c["outputs"] == [] for c in self.cells])
 
+    def clean(self):
+        for cell in self.jupyter_notebook.cells:
+            cell["outputs"] = []
+            del cell["execution_count"]
+
 
 def test_loading_one_cell_notebook():
     one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
@@ -92,3 +97,13 @@ def test_executed_jupyter_notebook_is_not_clean():
     notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
     notebook.execute()
     assert not notebook.is_clean()
+
+
+def test_can_clean_executed_jupyter_notebook():
+    one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
+    with open(one_cell_notebook_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
+    notebook.execute()
+    notebook.clean()
+    assert notebook.is_clean()
