@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.9"
 pytest = "^7.2.1"
 pre-commit = "^3.0.1"
+nbformat = "^5.8.0"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.9.0"
