@@ -26,6 +26,9 @@ class Notebook:
     def cells(self):
         return self.jupyter_notebook.cells
 
+    def is_clean(self) -> bool:
+        return all([c["outputs"] == [] for c in self.cells])
+
 
 def test_loading_one_cell_notebook():
     one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
@@ -57,7 +60,12 @@ class DummyClient(NotebookClient):
         return DummyContext()
 
     def execute_cell(self, cell, index):
-        cell["outputs"] = [{"text": "Dummy text\n"}]
+        cell["outputs"] = [{"output_type": "stream", "name": "stdout", "text": "Dummy text\n"}]
+        current_count = cell.get("execution_count")
+        if current_count is None:
+            current_count = 0
+        cell["execution_count"] = current_count + 1
+        cell["metadata"] = {"execution": "Execution data"}
 
 
 def test_execute_notebook_mocked():
@@ -67,3 +75,20 @@ def test_execute_notebook_mocked():
     notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
     notebook.execute()
     assert notebook.cells[0]["outputs"][0]["text"] == "Dummy text\n"
+
+
+def test_jupyter_notebook_is_clean():
+    one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
+    with open(one_cell_notebook_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
+    assert notebook.is_clean()
+
+
+def test_executed_jupyter_notebook_is_not_clean():
+    one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
+    with open(one_cell_notebook_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
+    notebook.execute()
+    assert not notebook.is_clean()
