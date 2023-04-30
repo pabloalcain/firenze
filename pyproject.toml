@@ -10,6 +10,8 @@ python = "^3.9"
 pytest = "^7.2.1"
 pre-commit = "^3.0.1"
 nbformat = "^5.8.0"
+nbclient = "^0.7.4"
+ipykernel = "^6.22.0"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.9.0"
@@ -20,3 +22,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 100
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "serial",
+]
