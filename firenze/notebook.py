@@ -2,6 +2,7 @@ from typing import Optional
 
 import nbformat
 from nbclient import NotebookClient
+from nbconvert import HTMLExporter
 
 
 class Notebook:
@@ -23,6 +24,10 @@ class Notebook:
     @property
     def cells(self):
         return self.jupyter_notebook.cells
+
+    @property
+    def html(self) -> str:
+        return HTMLExporter().from_notebook_node(self.jupyter_notebook)[0]
 
     def is_clean(self) -> bool:
         return all([c["outputs"] == [] for c in self.cells])

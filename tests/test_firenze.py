@@ -89,3 +89,12 @@ def test_notebook_with_error_raises_proper_error():
     notebook = Notebook(notebook_with_error)
     with pytest.raises(client.CellExecutionError, match="name 'prinft' is not defined"):
         notebook.execute()
+
+
+def test_clean_notebook_generates_html():
+    one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
+    with open(one_cell_notebook_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
+    # Don't know how to assert this
+    assert "&quot;Starting Cell 1...&quot;" in notebook.html
