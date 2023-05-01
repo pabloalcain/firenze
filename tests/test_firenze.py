@@ -1,5 +1,6 @@
 import pathlib
 
+import nbclient.exceptions
 import pytest
 import nbformat
 from nbclient import NotebookClient, client
@@ -37,12 +38,16 @@ class DummyClient(NotebookClient):
         return DummyContext()
 
     def execute_cell(self, cell, index):
-        cell["outputs"] = [{"output_type": "stream", "name": "stdout", "text": "Dummy text\n"}]
+        cell["outputs"] = [
+            nbformat.NotebookNode(
+                {"output_type": "stream", "name": "stdout", "text": "Dummy text\n"}
+            )
+        ]
         current_count = cell.get("execution_count")
         if current_count is None:
             current_count = 0
         cell["execution_count"] = current_count + 1
-        cell["metadata"] = {"execution": "Execution data"}
+        cell["metadata"] = nbformat.NotebookNode({"execution": {"something": "Execution data"}})
 
 
 def test_execute_notebook_mocked():
@@ -91,6 +96,7 @@ def test_notebook_with_error_raises_proper_error():
         notebook.execute()
 
 
+@pytest.mark.slow
 def test_clean_notebook_generates_html():
     one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
     with open(one_cell_notebook_path) as f:
@@ -98,3 +104,25 @@ def test_clean_notebook_generates_html():
     notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
     # Don't know how to assert this
     assert "&quot;Starting Cell 1...&quot;" in notebook.html
+    assert "Dummy text" not in notebook.html
+
+
+@pytest.mark.slow
+def test_executed_notebook_generates_html():
+    one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
+    with open(one_cell_notebook_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
+    notebook.execute()
+    assert "Dummy text" in notebook.html
+
+
+@pytest.mark.slow
+def test_notebook_that_fails_generates_html():
+    notebook_with_error_path = pathlib.Path(__file__).parent / "data/notebook_with_error.ipynb"
+    with open(notebook_with_error_path) as f:
+        notebook_with_error = nbformat.read(f, as_version=4)
+    notebook = Notebook(notebook_with_error)
+    with pytest.raises(nbclient.exceptions.CellExecutionError):
+        notebook.execute()
+    assert "NameError" in notebook.html
