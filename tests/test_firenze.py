@@ -2,7 +2,7 @@ import pathlib
 
 import pytest
 import nbformat
-from nbclient import NotebookClient
+from nbclient import NotebookClient, client
 
 from firenze.notebook import Notebook
 
@@ -79,3 +79,13 @@ def test_can_clean_executed_jupyter_notebook():
     notebook.execute()
     notebook.clean()
     assert notebook.is_clean()
+
+
+@pytest.mark.slow
+def test_notebook_with_error_raises_proper_error():
+    notebook_with_error_path = pathlib.Path(__file__).parent / "data/notebook_with_error.ipynb"
+    with open(notebook_with_error_path) as f:
+        notebook_with_error = nbformat.read(f, as_version=4)
+    notebook = Notebook(notebook_with_error)
+    with pytest.raises(client.CellExecutionError, match="name 'prinft' is not defined"):
+        notebook.execute()
