@@ -36,3 +36,9 @@ class Notebook:
         for cell in self.jupyter_notebook.cells:
             cell["outputs"] = []
             del cell["execution_count"]
+
+    @classmethod
+    def from_path(cls, notebook_path, client: Optional[NotebookClient] = None):
+        with open(notebook_path) as f:
+            jupyter_notebook = nbformat.read(f, as_version=4)
+        return cls(jupyter_notebook, client)

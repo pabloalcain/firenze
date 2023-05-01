@@ -126,3 +126,11 @@ def test_notebook_that_fails_generates_html():
     with pytest.raises(nbclient.exceptions.CellExecutionError):
         notebook.execute()
     assert "NameError" in notebook.html
+
+
+def test_load_notebook_from_path():
+    one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
+    notebook = Notebook.from_path(one_cell_notebook_path)
+    with open(one_cell_notebook_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    assert notebook.jupyter_notebook == jupyter_notebook
