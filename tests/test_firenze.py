@@ -169,3 +169,24 @@ def test_can_modify_variable_to_a_list():
     notebook = Notebook.from_path(notebook_with_variables_path)
     notebook.set_first_assignment_of_variable("my_variable", [1, 2, 3])
     assert notebook.get_first_assignment_of_variable("my_variable") == [1, 2, 3]
+
+
+@pytest.mark.slow
+def test_execute_notebook_with_parameters():
+    notebook_with_variables_path = (
+        pathlib.Path(__file__).parent / "data/notebook_with_variables.ipynb"
+    )
+    notebook = Notebook.from_path(notebook_with_variables_path)
+    notebook.execute(my_variable=5)
+    assert notebook.cells[0]["outputs"][0]["text"] == "My variable is 5\n"
+
+
+def test_dummy_execute_notebook_with_parameters():
+    notebook_with_variables_path = (
+        pathlib.Path(__file__).parent / "data/notebook_with_variables.ipynb"
+    )
+    with open(notebook_with_variables_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
+    notebook.execute(my_variable=5)
+    assert notebook.get_first_assignment_of_variable("my_variable") == 5
