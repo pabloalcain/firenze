@@ -134,3 +134,11 @@ def test_load_notebook_from_path():
     with open(one_cell_notebook_path) as f:
         jupyter_notebook = nbformat.read(f, as_version=4)
     assert notebook.jupyter_notebook == jupyter_notebook
+
+
+def test_can_find_variable_in_notebook():
+    notebook_with_variables_path = (
+        pathlib.Path(__file__).parent / "data/notebook_with_variables.ipynb"
+    )
+    notebook = Notebook.from_path(notebook_with_variables_path)
+    assert notebook.get_first_assignment_of_variable("my_variable") == 4

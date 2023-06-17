@@ -4,6 +4,8 @@ import nbformat
 from nbclient import NotebookClient
 from nbconvert import HTMLExporter
 
+import ast
+
 
 class Notebook:
     def __init__(
@@ -42,3 +44,14 @@ class Notebook:
         with open(notebook_path) as f:
             jupyter_notebook = nbformat.read(f, as_version=4)
         return cls(jupyter_notebook, client)
+
+    def get_first_assignment_of_variable(self, variable_name: str):
+        for cell in self.cells:
+            if cell["cell_type"] == "code":
+                tree = ast.parse(cell["source"])
+                for node in ast.walk(tree):
+                    if not isinstance(node, ast.Assign):
+                        continue
+                    for target in node.targets:
+                        if isinstance(target, ast.Name) and target.id == variable_name:
+                            return ast.literal_eval(node.value)
