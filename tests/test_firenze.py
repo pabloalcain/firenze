@@ -160,3 +160,12 @@ def test_cannot_modify_missing_variable_in_notebook():
     notebook = Notebook.from_path(notebook_with_variables_path)
     with pytest.raises(ValueError, match="Variable non_existing_variable not found"):
         notebook.set_first_assignment_of_variable("non_existing_variable", 5)
+
+
+def test_can_modify_variable_to_a_list():
+    notebook_with_variables_path = (
+        pathlib.Path(__file__).parent / "data/notebook_with_variables.ipynb"
+    )
+    notebook = Notebook.from_path(notebook_with_variables_path)
+    notebook.set_first_assignment_of_variable("my_variable", [1, 2, 3])
+    assert notebook.get_first_assignment_of_variable("my_variable") == [1, 2, 3]
