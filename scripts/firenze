@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+import click
+
+from firenze.notebook import Notebook
+
+
+@click.command()
+@click.argument('notebook-path', type=click.Path(exists=True))
+@click.option('--output-html-path', type=click.Path(), default="output.html")
+def execute_notebook(notebook_path, output_html_path):
+    notebook = Notebook.from_path(notebook_path)
+    notebook.clean()
+    try:
+        notebook.execute()
+    finally:
+        with open(output_html_path, "w") as f:
+            f.write(notebook.html)
+
+
+if __name__ == '__main__':
+    execute_notebook()
