@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 import nbformat
 from nbclient import NotebookClient
@@ -28,6 +28,10 @@ class Notebook:
         return self.jupyter_notebook.cells
 
     @property
+    def code_cells(self):
+        return [c for c in self.cells if c["cell_type"] == "code"]
+
+    @property
     def html(self) -> str:
         return HTMLExporter().from_notebook_node(self.jupyter_notebook)[0]
 
@@ -46,12 +50,24 @@ class Notebook:
         return cls(jupyter_notebook, client)
 
     def get_first_assignment_of_variable(self, variable_name: str):
-        for cell in self.cells:
-            if cell["cell_type"] == "code":
-                tree = ast.parse(cell["source"])
-                for node in ast.walk(tree):
-                    if not isinstance(node, ast.Assign):
-                        continue
-                    for target in node.targets:
-                        if isinstance(target, ast.Name) and target.id == variable_name:
-                            return ast.literal_eval(node.value)
+        for cell in self.code_cells:
+            tree = ast.parse(cell["source"])
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Assign):
+                    continue
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id == variable_name:
+                        return ast.literal_eval(node.value)
+
+    def set_first_assignment_of_variable(self, variable_name: str, variable_value: Any):
+        for cell in self.code_cells:
+            tree = ast.parse(cell["source"])
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Assign):
+                    continue
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id == variable_name:
+                        node.value = ast.Constant(variable_value)
+                        cell["source"] = ast.unparse(tree)
+                        return
+        raise ValueError(f"Variable {variable_name} not found")
