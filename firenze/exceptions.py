@@ -1,0 +1,2 @@
+class VariableAssignmentError(Exception):
+    pass

@@ -6,6 +6,7 @@ import nbformat
 from nbclient import NotebookClient, client
 
 from firenze.notebook import Notebook
+from firenze.exceptions import VariableAssignmentError
 
 
 def test_loading_one_cell_notebook():
@@ -158,7 +159,7 @@ def test_cannot_modify_missing_variable_in_notebook():
         pathlib.Path(__file__).parent / "data/notebook_with_variables.ipynb"
     )
     notebook = Notebook.from_path(notebook_with_variables_path)
-    with pytest.raises(ValueError, match="Variable non_existing_variable not found"):
+    with pytest.raises(VariableAssignmentError, match="Variable non_existing_variable not found"):
         notebook.set_first_assignment_of_variable("non_existing_variable", 5)
 
 

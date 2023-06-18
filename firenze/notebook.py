@@ -1,10 +1,11 @@
+import ast
 from typing import Optional, Any
 
 import nbformat
 from nbclient import NotebookClient
 from nbconvert import HTMLExporter
 
-import ast
+from firenze.exceptions import VariableAssignmentError
 
 
 class Notebook:
@@ -72,4 +73,4 @@ class Notebook:
                         node.value = ast.Constant(variable_value)
                         cell["source"] = ast.unparse(tree)
                         return
-        raise ValueError(f"Variable {variable_name} not found")
+        raise VariableAssignmentError(f"Variable {variable_name} not found")
