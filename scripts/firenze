@@ -1,21 +1,42 @@
 #!/usr/bin/env python3
+import json
+import pathlib
+
 import click
 
 from firenze.notebook import Notebook
-
+from firenze.exceptions import VariableAssignmentError
 
 @click.command()
 @click.argument('notebook-path', type=click.Path(exists=True))
 @click.option('--output-html-path', type=click.Path(), default="output.html")
-def execute_notebook(notebook_path, output_html_path):
+@click.argument('parameters', nargs=-1)
+def execute_notebook(notebook_path, output_html_path, parameters):
+    parsed_options = parse_options(parameters)
     notebook = Notebook.from_path(notebook_path)
     notebook.clean()
+    should_print = True
     try:
-        notebook.execute()
+        notebook.execute(**parsed_options)
+    except Exception as e:
+        should_print = not isinstance(e, VariableAssignmentError)
+        raise
     finally:
-        with open(output_html_path, "w") as f:
-            f.write(notebook.html)
+        if should_print:
+            pathlib.Path(output_html_path).parent.mkdir(parents=True, exist_ok=True)
+            with open(output_html_path, "w") as f:
+                f.write(notebook.html)
 
+def parse_options(parameters):
+    parsed_options = {}
+    for option in parameters:
+        name, value = option.split("=", 1)
+        try:
+            value = json.loads(value)
+        except json.JSONDecodeError:
+            pass
+        parsed_options[name] = value
+    return parsed_options
 
 if __name__ == '__main__':
     execute_notebook()
