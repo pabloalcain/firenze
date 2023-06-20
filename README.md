@@ -13,7 +13,7 @@ pip install firenze
 
 Suppose you have a very simple notebook that runs a "Hello, World!"
 
-![A notebook in jupyter](docs/img/hello_world_in_jupyter.png)
+![A notebook in jupyter](https://github.com/pabloalcain/firenze/blob/main/docs/img/hello_world_in_jupyter.png?raw=true)
 
 You can execute it right away with `firenze` through
 ```bash
@@ -21,7 +21,7 @@ firenze docs/notebooks/hello_world.ipynb
 ```
 and the output html will be, as expected:
 
-![Hello, World! output](docs/img/hello_world_output.png)
+![Hello, World! output](https://github.com/pabloalcain/firenze/blob/main/docs/img/hello_world_output.png?raw=true)
 
 You can also send parameters and `firenze` will automatically modify the variable:
 
@@ -29,7 +29,7 @@ You can also send parameters and `firenze` will automatically modify the variabl
 firenze docs/notebooks/hello_world.ipynb name=Firenze
 ```
 
-![Hello, Firenze! output](docs/img/hello_world_with_parameters.png)
+![Hello, Firenze! output](https://github.com/pabloalcain/firenze/blob/main/docs/img/hello_world_with_parameters.png?raw=true)
 
 ## As a Docker Image
 This is still in the making, but one idea is to call `firenze` as a docker image with a notebook
