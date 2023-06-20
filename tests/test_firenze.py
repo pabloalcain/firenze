@@ -218,6 +218,7 @@ def test_can_load_notebook_from_s3(mock_bucket):
     assert notebook.jupyter_notebook == jupyter_notebook
 
 
+@pytest.mark.slow
 def test_can_write_notebook_html_to_local_file():
     one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
     with open(one_cell_notebook_path) as f:
@@ -228,3 +229,17 @@ def test_can_write_notebook_html_to_local_file():
     with tempfile.NamedTemporaryFile(delete=True) as tmp:
         notebook.write_html(tmp.name)
         assert "Dummy text" in tmp.read().decode("utf-8")
+
+
+@pytest.mark.slow
+def test_can_write_notebook_html_to_s3_path(mock_bucket):
+    one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
+    with open(one_cell_notebook_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
+    notebook.execute()
+
+    notebook.write_html("s3://notebooks/even_further/one_cell_notebook.html")
+    s3 = boto3.resource("s3")
+    obj = s3.Object("notebooks", "even_further/one_cell_notebook.html")
+    assert "Dummy text" in obj.get()["Body"].read().decode("utf-8")

@@ -90,6 +90,17 @@ class Notebook:
         return cls(jupyter_notebook)
 
     def write_html(self, file_path):
+        if file_path.startswith("s3://"):
+            self.write_html_to_s3(file_path)
+        else:
+            self.write_html_to_local(file_path)
+
+    def write_html_to_local(self, file_path):
         pathlib.Path(file_path).parent.mkdir(parents=True, exist_ok=True)
         with open(file_path, "w") as f:
             f.write(self.html)
+
+    def write_html_to_s3(self, s3_path):
+        bucket, key = s3_path.replace("s3://", "").split("/", 1)
+        s3_client = boto3.client("s3")
+        s3_client.put_object(Bucket=bucket, Key=key, Body=self.html)
