@@ -69,7 +69,10 @@ class Notebook:
 
     def set_first_assignment_of_variable(self, variable_name: str, variable_value: Any):
         for cell in self.code_cells:
-            tree = ast.parse(cell["source"])
+            try:
+                tree = ast.parse(cell["source"])
+            except SyntaxError:
+                continue
             for node in ast.walk(tree):
                 if not isinstance(node, ast.Assign):
                     continue

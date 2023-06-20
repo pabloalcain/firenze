@@ -196,6 +196,20 @@ def test_dummy_execute_notebook_with_parameters():
     assert notebook.get_first_assignment_of_variable("my_variable") == 5
 
 
+def test_dummy_execute_notebook_with_magic_and_parameters():
+    notebook_with_variables_path = (
+        pathlib.Path(__file__).parent / "data/notebook_with_variables_and_magic.ipynb"
+    )
+    with open(notebook_with_variables_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
+    notebook.execute(my_variable=5)
+    assert (
+        notebook.code_cells[2]["source"]
+        == "my_variable = 5\nprint(f'My variable is {my_variable}')"
+    )
+
+
 @pytest.fixture
 def mock_bucket():
     moto_fake = mock_s3()
