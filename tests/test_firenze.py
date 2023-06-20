@@ -1,12 +1,14 @@
 import pathlib
 
+import boto3
 import nbclient.exceptions
-import pytest
 import nbformat
+import pytest
+from moto import mock_s3
 from nbclient import NotebookClient, client
 
-from firenze.notebook import Notebook
 from firenze.exceptions import VariableAssignmentError
+from firenze.notebook import Notebook
 
 
 def test_loading_one_cell_notebook():
@@ -191,3 +193,25 @@ def test_dummy_execute_notebook_with_parameters():
     notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
     notebook.execute(my_variable=5)
     assert notebook.get_first_assignment_of_variable("my_variable") == 5
+
+
+@pytest.fixture
+def mock_bucket():
+    moto_fake = mock_s3()
+    try:
+        moto_fake.start()
+        conn = boto3.client("s3")
+        conn.create_bucket(Bucket="notebooks")
+        notebook = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
+        conn.upload_file(Filename=notebook, Bucket="notebooks", Key="one_cell_notebook.ipynb")
+        yield
+    finally:
+        moto_fake.stop()
+
+
+def test_can_load_notebook_from_s3(mock_bucket):
+    notebook_with_variables_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
+    notebook = Notebook.from_s3("s3://notebooks/one_cell_notebook.ipynb")
+    with open(notebook_with_variables_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    assert notebook.jupyter_notebook == jupyter_notebook

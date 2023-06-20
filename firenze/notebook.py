@@ -1,6 +1,7 @@
 import ast
-from typing import Optional, Any
+from typing import Any, Optional
 
+import boto3
 import nbformat
 from nbclient import NotebookClient
 from nbconvert import HTMLExporter
@@ -44,7 +45,10 @@ class Notebook:
     def clean(self):
         for cell in self.jupyter_notebook.cells:
             cell["outputs"] = []
-            del cell["execution_count"]
+            try:
+                del cell["execution_count"]
+            except KeyError:
+                pass
 
     @classmethod
     def from_path(cls, notebook_path, client: Optional[NotebookClient] = None):
@@ -74,3 +78,12 @@ class Notebook:
                         cell["source"] = ast.unparse(tree)
                         return
         raise VariableAssignmentError(f"Variable {variable_name} not found")
+
+    @classmethod
+    def from_s3(cls, s3_path, s3_client=None):
+        if s3_client is None:
+            s3_client = boto3.client("s3")
+        bucket, key = s3_path.replace("s3://", "").split("/", 1)
+        data = s3_client.get_object(Bucket=bucket, Key=key)
+        jupyter_notebook = nbformat.reads(data["Body"].read().decode("utf_8"), as_version=4)
+        return cls(jupyter_notebook)
