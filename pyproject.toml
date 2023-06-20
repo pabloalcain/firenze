@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "firenze"
 version = "0.1.0"
-description = "A runner for jupyter notebooks."
+description = "A lean executor for jupyter notebooks."
 authors = ["Pablo Alcain <pabloalcain@gmail.com>"]
 license = "MIT"
 readme = "README.md"
