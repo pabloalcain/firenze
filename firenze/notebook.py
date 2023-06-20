@@ -81,7 +81,9 @@ class Notebook:
                         node.value = ast.Constant(variable_value)
                         cell["source"] = ast.unparse(tree)
                         return
-        raise VariableAssignmentError(f"Variable {variable_name} not found")
+        raise VariableAssignmentError(
+            f"Variable {variable_name} not found. Maybe in a cell with a magic command?"
+        )
 
     @classmethod
     def from_s3(cls, s3_path, s3_client=None):
