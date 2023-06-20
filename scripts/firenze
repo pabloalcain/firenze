@@ -23,9 +23,7 @@ def execute_notebook(notebook_path, output_html_path, parameters):
         raise
     finally:
         if should_print:
-            pathlib.Path(output_html_path).parent.mkdir(parents=True, exist_ok=True)
-            with open(output_html_path, "w") as f:
-                f.write(notebook.html)
+            notebook.write_html(output_html_path)
 
 def parse_options(parameters):
     parsed_options = {}

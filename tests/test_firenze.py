@@ -1,4 +1,5 @@
 import pathlib
+import tempfile
 
 import boto3
 import nbclient.exceptions
@@ -215,3 +216,15 @@ def test_can_load_notebook_from_s3(mock_bucket):
     with open(notebook_with_variables_path) as f:
         jupyter_notebook = nbformat.read(f, as_version=4)
     assert notebook.jupyter_notebook == jupyter_notebook
+
+
+def test_can_write_notebook_html_to_local_file():
+    one_cell_notebook_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
+    with open(one_cell_notebook_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
+    notebook.execute()
+
+    with tempfile.NamedTemporaryFile(delete=True) as tmp:
+        notebook.write_html(tmp.name)
+        assert "Dummy text" in tmp.read().decode("utf-8")

@@ -1,4 +1,5 @@
 import ast
+import pathlib
 from typing import Any, Optional
 
 import boto3
@@ -87,3 +88,8 @@ class Notebook:
         data = s3_client.get_object(Bucket=bucket, Key=key)
         jupyter_notebook = nbformat.reads(data["Body"].read().decode("utf_8"), as_version=4)
         return cls(jupyter_notebook)
+
+    def write_html(self, file_path):
+        pathlib.Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(file_path, "w") as f:
+            f.write(self.html)
