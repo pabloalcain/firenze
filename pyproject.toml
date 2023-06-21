@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "firenze"
-version = "0.1.1"
+version = "0.1.2"
 description = "A lean executor for jupyter notebooks."
 authors = ["Pablo Alcain <pabloalcain@gmail.com>"]
 license = "MIT"
@@ -24,6 +24,7 @@ notebook = "^6.5.4"
 moto = "^4.1.11"
 pytest = "^7.2.1"
 pre-commit = "^3.0.1"
+pytest-cov = "^4.1.0"
 
 [tool.poetry.scripts]
 firenze = 'firenze.cli:execute_notebook'
