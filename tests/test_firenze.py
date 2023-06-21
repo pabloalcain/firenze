@@ -260,3 +260,11 @@ def test_can_write_notebook_html_to_s3_path(mock_bucket):
     s3 = boto3.resource("s3")
     obj = s3.Object("notebooks", "even_further/one_cell_notebook.html")
     assert "Dummy text" in obj.get()["Body"].read().decode("utf-8")
+
+def test_can_load_notebook_from_s3_with_from_path_constructor(mock_bucket):
+    notebook_with_variables_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
+    notebook = Notebook.from_path("s3://notebooks/one_cell_notebook.ipynb")
+    with open(notebook_with_variables_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    assert notebook.jupyter_notebook == jupyter_notebook
+

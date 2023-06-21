@@ -5,6 +5,8 @@ description = "A lean executor for jupyter notebooks."
 authors = ["Pablo Alcain <pabloalcain@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/pabloalcain/firenze"
+keywords = ["jupyter", "notebook"]
 
 [tool.poetry.dependencies]
 python = "^3.9"

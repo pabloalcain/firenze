@@ -53,6 +53,12 @@ class Notebook:
 
     @classmethod
     def from_path(cls, notebook_path, client: Optional[NotebookClient] = None):
+        if str(notebook_path).startswith("s3://"):
+            return cls.from_s3(notebook_path)
+        return cls.from_local(client, notebook_path)
+
+    @classmethod
+    def from_local(cls, client, notebook_path):
         with open(notebook_path) as f:
             jupyter_notebook = nbformat.read(f, as_version=4)
         return cls(jupyter_notebook, client)

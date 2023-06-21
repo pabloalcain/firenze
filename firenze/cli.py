@@ -6,9 +6,15 @@ import click
 from firenze.exceptions import VariableAssignmentError
 from firenze.notebook import Notebook
 
+# a bit hacky
+class PathOrS3(click.Path):
+    def convert(self, value, param, ctx):
+        if value.startswith('s3://'):
+            return value
+        return super().convert(value, param, ctx)
 
 @click.command()
-@click.argument("notebook-path", type=click.Path(exists=True))
+@click.argument("notebook-path", type=PathOrS3(exists=True))
 @click.option("--output-html-path", type=click.Path(), default="output.html")
 @click.argument("parameters", nargs=-1)
 def execute_notebook(notebook_path, output_html_path, parameters):
