@@ -43,15 +43,15 @@ class Notebook:
         return HTMLExporter().from_notebook_node(self.jupyter_notebook)[0]
 
     def is_clean(self) -> bool:
-        return all([c["outputs"] == [] for c in self.cells])
+        return all([c["outputs"] == [] for c in self.cells]) and all(
+            c["execution_count"] is None for c in self.code_cells
+        )
 
     def clean(self):
         for cell in self.jupyter_notebook.cells:
             cell["outputs"] = []
-            try:
-                del cell["execution_count"]
-            except KeyError:
-                pass
+            if cell["cell_type"] == "code":
+                cell["execution_count"] = None
 
     @classmethod
     def from_path(cls, notebook_path, client: Optional[NotebookClient] = None):
