@@ -184,7 +184,8 @@ def test_execute_notebook_with_parameters():
         pathlib.Path(__file__).parent / "data/notebook_with_variables.ipynb"
     )
     notebook = Notebook.from_path(notebook_with_variables_path)
-    notebook.execute(my_variable=5)
+    notebook.set_parameters(my_variable=5)
+    notebook.execute()
     assert notebook.cells[0]["outputs"][0]["text"] == "My variable is 5\n"
 
 
@@ -195,7 +196,8 @@ def test_dummy_execute_notebook_with_parameters():
     with open(notebook_with_variables_path) as f:
         jupyter_notebook = nbformat.read(f, as_version=4)
     notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
-    notebook.execute(my_variable=5)
+    notebook.set_parameters(my_variable=5)
+    notebook.execute()
     assert notebook.get_first_assignment_of_variable("my_variable") == 5
 
 
@@ -206,7 +208,8 @@ def test_dummy_execute_notebook_with_magic_and_parameters():
     with open(notebook_with_variables_path) as f:
         jupyter_notebook = nbformat.read(f, as_version=4)
     notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
-    notebook.execute(my_variable=5)
+    notebook.set_parameters(my_variable=5)
+    notebook.execute()
     assert (
         notebook.code_cells[2]["source"]
         == "my_variable = 5\nprint(f'My variable is {my_variable}')"
@@ -261,10 +264,10 @@ def test_can_write_notebook_html_to_s3_path(mock_bucket):
     obj = s3.Object("notebooks", "even_further/one_cell_notebook.html")
     assert "Dummy text" in obj.get()["Body"].read().decode("utf-8")
 
+
 def test_can_load_notebook_from_s3_with_from_path_constructor(mock_bucket):
     notebook_with_variables_path = pathlib.Path(__file__).parent / "data/one_cell_notebook.ipynb"
     notebook = Notebook.from_path("s3://notebooks/one_cell_notebook.ipynb")
     with open(notebook_with_variables_path) as f:
         jupyter_notebook = nbformat.read(f, as_version=4)
     assert notebook.jupyter_notebook == jupyter_notebook
-

@@ -21,12 +21,14 @@ class Notebook:
         self.client = client
         self.jupyter_notebook = notebook
 
-    def execute(self, **kwargs):
-        for key, value in kwargs.items():
-            self.set_first_assignment_of_variable(key, value)
+    def execute(self):
         with self.client.setup_kernel():
             for index, cell in enumerate(self.jupyter_notebook.cells):
                 self.client.execute_cell(cell, index)
+
+    def set_parameters(self, **kwargs):
+        for key, value in kwargs.items():
+            self.set_first_assignment_of_variable(key, value)
 
     @property
     def cells(self):

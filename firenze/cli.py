@@ -3,15 +3,16 @@ import json
 
 import click
 
-from firenze.exceptions import VariableAssignmentError
 from firenze.notebook import Notebook
+
 
 # a bit hacky
 class PathOrS3(click.Path):
     def convert(self, value, param, ctx):
-        if value.startswith('s3://'):
+        if value.startswith("s3://"):
             return value
         return super().convert(value, param, ctx)
+
 
 @click.command()
 @click.argument("notebook-path", type=PathOrS3(exists=True))
@@ -21,15 +22,11 @@ def execute_notebook(notebook_path, output_html_path, parameters):
     parsed_options = parse_options(parameters)
     notebook = Notebook.from_path(notebook_path)
     notebook.clean()
-    should_print = True
+    notebook.set_parameters(**parsed_options)
     try:
-        notebook.execute(**parsed_options)
-    except Exception as e:
-        should_print = not isinstance(e, VariableAssignmentError)
-        raise
+        notebook.execute()
     finally:
-        if should_print:
-            notebook.write_html(output_html_path)
+        notebook.write_html(output_html_path)
 
 
 def parse_options(parameters):
