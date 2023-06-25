@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import asyncio
 import json
 
 import click
@@ -23,10 +24,22 @@ def execute_notebook(notebook_path, output_html_path, parameters):
     notebook = Notebook.from_path(notebook_path)
     notebook.clean()
     notebook.set_parameters(**parsed_options)
-    try:
-        notebook.execute()
-    finally:
+    done_event = asyncio.Event()
+
+    async def execute_and_write():
+        async def execute():
+            await notebook.async_execute()
+            done_event.set()
+
+        async def write_html():
+            while not done_event.is_set():
+                notebook.write_html(output_html_path)
+                await asyncio.sleep(5)
+
+        await asyncio.gather(asyncio.create_task(execute()), asyncio.create_task(write_html()))
         notebook.write_html(output_html_path)
+
+    asyncio.run(execute_and_write())
 
 
 def parse_options(parameters):
