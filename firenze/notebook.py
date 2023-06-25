@@ -1,4 +1,5 @@
 import ast
+import asyncio
 import pathlib
 from typing import Any, Optional
 
@@ -22,9 +23,12 @@ class Notebook:
         self.jupyter_notebook = notebook
 
     def execute(self):
-        with self.client.setup_kernel():
+        asyncio.run(self.async_execute())
+
+    async def async_execute(self):
+        async with self.client.async_setup_kernel():
             for index, cell in enumerate(self.jupyter_notebook.cells):
-                self.client.execute_cell(cell, index)
+                await self.client.async_execute_cell(cell, index)
 
     def set_parameters(self, **kwargs):
         for key, value in kwargs.items():

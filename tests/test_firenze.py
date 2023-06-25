@@ -31,17 +31,17 @@ def test_execute_notebook():
 
 
 class DummyClient(NotebookClient):
-    def setup_kernel(self):
+    def async_setup_kernel(self):
         class DummyContext:
-            def __enter__(self):
+            async def __aenter__(self):
                 pass
 
-            def __exit__(self, exc_type, exc_value, traceback):
+            async def __aexit__(self, exc_type, exc_value, traceback):
                 pass
 
         return DummyContext()
 
-    def execute_cell(self, cell, index):
+    async def async_execute_cell(self, cell, index):
         cell["outputs"] = [
             nbformat.NotebookNode(
                 {"output_type": "stream", "name": "stdout", "text": "Dummy text\n"}
