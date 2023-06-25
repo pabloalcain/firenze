@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import asyncio
 import json
+import sys
 
 import click
 
@@ -17,7 +18,7 @@ class PathOrS3(click.Path):
 
 @click.command()
 @click.argument("notebook-path", type=PathOrS3(exists=True))
-@click.option("--output-html-path", type=click.Path(), default="output.html")
+@click.option("--output-html-path", type=PathOrS3(), default="output.html")
 @click.argument("parameters", nargs=-1)
 def execute_notebook(notebook_path, output_html_path, parameters):
     parsed_options = parse_options(parameters)
@@ -55,4 +56,4 @@ def parse_options(parameters):
 
 
 if __name__ == "__main__":
-    execute_notebook()
+    sys.exit(execute_notebook())
