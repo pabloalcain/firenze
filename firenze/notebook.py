@@ -8,6 +8,7 @@ import nbformat
 from nbclient import NotebookClient
 from nbconvert import HTMLExporter
 
+from firenze import progress
 from firenze.exceptions import VariableAssignmentError
 
 
@@ -27,7 +28,7 @@ class Notebook:
 
     async def async_execute(self):
         async with self.client.async_setup_kernel():
-            for index, cell in enumerate(self.jupyter_notebook.cells):
+            for index, cell in enumerate(progress.with_logging(self.cells)):
                 await self.client.async_execute_cell(cell, index)
 
     def set_parameters(self, **kwargs):

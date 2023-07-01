@@ -1,4 +1,6 @@
+import logging
 import pathlib
+import re
 import tempfile
 
 import boto3
@@ -23,7 +25,7 @@ class DummyClient(NotebookClient):
 
         return DummyContext()
 
-    async def async_execute_cell(self, cell, index):
+    async def async_execute_cell(self, cell, index, **kwargs):
         cell["outputs"] = [
             nbformat.NotebookNode(
                 {"output_type": "stream", "name": "stdout", "text": "Dummy text\n"}
@@ -252,3 +254,26 @@ def test_can_load_notebook_from_s3_with_from_path_constructor(mock_bucket, one_c
     with open(notebook_with_variables_path) as f:
         jupyter_notebook = nbformat.read(f, as_version=4)
     assert notebook.jupyter_notebook == jupyter_notebook
+
+
+def test_notebook_execution_logs_input_and_output(caplog, one_cell_notebook_path):
+    with open(one_cell_notebook_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
+
+    with caplog.at_level(logging.INFO):
+        notebook.execute()
+    log_records = [i.msg for i in caplog.records]
+    expected_patterns = [
+        "Cell 1/1:",
+        "---------",
+        "Input:",
+        re.escape('print("Starting Cell 1...")\nprint("Finished Cell 1")\n'),
+        "Output:",
+        "Dummy text\n",
+        "==========",
+        re.compile(r"^Execution finished in [0-9\.]+ seconds$"),
+    ]
+    assert len(expected_patterns) == len(log_records)
+    for expected_pattern, record in zip(expected_patterns, log_records):
+        assert re.match(expected_pattern, record)

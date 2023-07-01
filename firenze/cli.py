@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import asyncio
 import json
+import logging
 import sys
 
 import click
@@ -19,13 +20,19 @@ class PathOrS3(click.Path):
 @click.command()
 @click.argument("notebook-path", type=PathOrS3(exists=True))
 @click.option("--output-html-path", type=PathOrS3(), default="output.html")
+@click.option("-q", "--quiet", count=True, help="Decrease verbosity.")
 @click.argument("parameters", nargs=-1)
-def execute_notebook(notebook_path, output_html_path, parameters):
+def execute_notebook(notebook_path, output_html_path, quiet, parameters):
     parsed_options = parse_options(parameters)
     notebook = Notebook.from_path(notebook_path)
     notebook.clean()
     notebook.set_parameters(**parsed_options)
     done_event = asyncio.Event()
+
+    if quiet:
+        logging.basicConfig(level=logging.WARNING, format="%(message)s")
+    else:
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     async def execute_and_write():
         async def execute():
