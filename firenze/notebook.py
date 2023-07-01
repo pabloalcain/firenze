@@ -1,5 +1,6 @@
 import ast
 import asyncio
+import logging
 import pathlib
 from typing import Any, Optional
 
@@ -29,7 +30,11 @@ class Notebook:
     async def async_execute(self):
         async with self.client.async_setup_kernel():
             for index, cell in enumerate(progress.with_logging(self.cells)):
-                await self.client.async_execute_cell(cell, index)
+                execution = self.client.async_execute_cell(cell, index)
+                if logging.getLogger().isEnabledFor(logging.INFO):
+                    await progress.add_elapsed(execution)
+                else:
+                    await execution
 
     def set_parameters(self, **kwargs):
         for key, value in kwargs.items():
