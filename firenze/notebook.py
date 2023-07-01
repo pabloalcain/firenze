@@ -20,7 +20,7 @@ class Notebook:
         client: Optional[NotebookClient] = None,
     ):
         if client is None:
-            client = NotebookClient(notebook, timeout=600)
+            client = NotebookClient(notebook, timeout=None)
         self.client = client
         self.jupyter_notebook = notebook
 
