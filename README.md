@@ -3,6 +3,7 @@
 Firenze is a lean jupyter notebook executor, that generates the notebook output in a single HTML
 file.
 
+[![CI](https://github.com/pabloalcain/firenze/actions/workflows/ci.yaml/badge.svg)](https://github.com/pabloalcain/firenze/actions/workflows/ci.yaml)
 [![Coverage](https://codecov.io/gh/pabloalcain/firenze/branch/main/graph/badge.svg?token=VJGXI1MVOF)](https://codecov.io/gh/pabloalcain/firenze)
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/pabloalcain/firenze/blob/main/LICENSE.md)
 [![Python](https://img.shields.io/pypi/pyversions/firenze)](https://pypi.org/project/firenze/)
