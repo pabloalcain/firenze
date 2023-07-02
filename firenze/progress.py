@@ -35,7 +35,7 @@ def with_logging(cells):
         logging.info(cell["source"])
         yield cell
         logging.info("Output:")
-        logging.info("".join(output["text"] for output in cell["outputs"]))
+        logging.info("".join(output.get("text", "") for output in cell["outputs"]))
     logging.info("==========")
     finishing_time = time.time()
     logging.info(f"Execution finished in {finishing_time - starting_time:0.1f} seconds")
