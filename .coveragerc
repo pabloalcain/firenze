@@ -1,0 +1,2 @@
+[run]
+omit = firenze/cli.py
