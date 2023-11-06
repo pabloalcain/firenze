@@ -112,18 +112,28 @@ class Notebook:
         jupyter_notebook = nbformat.reads(data["Body"].read().decode("utf_8"), as_version=4)
         return cls(jupyter_notebook)
 
-    def write_html(self, file_path):
+    def save(self, file_path, content):
         if file_path.startswith("s3://"):
-            self.write_html_to_s3(file_path)
+            self._save_to_s3(file_path, content)
         else:
-            self.write_html_to_local(file_path)
+            self.save_to_local(file_path, content)
 
-    def write_html_to_local(self, file_path):
+    def write_html(self, file_path):
+        self.save(file_path, self.html)
+
+    def save_notebook(self, file_path):
+        # Serialize the notebook to a string
+        notebook_str = nbformat.writes(self.jupyter_notebook)
+        self.save(file_path, notebook_str)
+
+    @staticmethod
+    def save_to_local(file_path, content):
         pathlib.Path(file_path).parent.mkdir(parents=True, exist_ok=True)
         with open(file_path, "w") as f:
-            f.write(self.html)
+            f.write(content)
 
-    def write_html_to_s3(self, s3_path):
+    @staticmethod
+    def _save_to_s3(s3_path, content):
         bucket, key = s3_path.replace("s3://", "").split("/", 1)
         s3_client = boto3.client("s3")
-        s3_client.put_object(Bucket=bucket, Key=key, Body=self.html)
+        s3_client.put_object(Bucket=bucket, Key=key, Body=content)

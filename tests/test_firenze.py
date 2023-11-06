@@ -248,6 +248,19 @@ def test_can_write_notebook_html_to_local_file(one_cell_notebook_path):
 
 
 @pytest.mark.slow
+def test_can_write_notebook_ipynb_to_local_file(one_cell_notebook_path):
+    with open(one_cell_notebook_path) as f:
+        jupyter_notebook = nbformat.read(f, as_version=4)
+    notebook = Notebook(jupyter_notebook, DummyClient(jupyter_notebook))
+    notebook.execute()
+
+    with tempfile.NamedTemporaryFile(delete=True) as tmp:
+        notebook.save_notebook(tmp.name)
+        new_notebook = Notebook.from_path(tmp.name)
+        assert new_notebook.jupyter_notebook == notebook.jupyter_notebook
+
+
+@pytest.mark.slow
 def test_can_write_notebook_html_to_s3_path(mock_bucket, one_cell_notebook_path):
     with open(one_cell_notebook_path) as f:
         jupyter_notebook = nbformat.read(f, as_version=4)

@@ -19,10 +19,13 @@ class PathOrS3(click.Path):
 
 @click.command()
 @click.argument("notebook-path", type=PathOrS3(exists=True))
-@click.option("--output-html-path", type=PathOrS3(), default="output.html")
+@click.option("-o", "--output-html-path", type=PathOrS3(), default="output.html")
 @click.option("-q", "--quiet", count=True, help="Decrease verbosity.")
+@click.option(
+    "-i", "--in-place", is_flag=True, help="Overwrite the notebook file with the execution."
+)
 @click.argument("parameters", nargs=-1)
-def execute_notebook(notebook_path, output_html_path, quiet, parameters):
+def execute_notebook(notebook_path, output_html_path, quiet, in_place, parameters):
     parsed_options = parse_options(parameters)
     notebook = Notebook.from_path(notebook_path)
     notebook.clean()
@@ -39,13 +42,20 @@ def execute_notebook(notebook_path, output_html_path, quiet, parameters):
             await notebook.async_execute()
             done_event.set()
 
-        async def write_html():
+        async def write_while_running():
             while not done_event.is_set():
-                notebook.write_html(output_html_path)
+                await write()
                 await asyncio.sleep(5)
 
-        await asyncio.gather(asyncio.create_task(execute()), asyncio.create_task(write_html()))
-        notebook.write_html(output_html_path)
+        async def write():
+            if in_place:
+                notebook.save_notebook(notebook_path)
+            notebook.write_html(output_html_path)
+
+        await asyncio.gather(
+            asyncio.create_task(execute()), asyncio.create_task(write_while_running())
+        )
+        await write()
 
     asyncio.run(execute_and_write())
 
